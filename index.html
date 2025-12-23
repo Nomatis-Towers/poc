@@ -1,0 +1,2255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cahier des Charges - NOMATIS-Tower Nouvelle Génération</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <!-- PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ========== CSS VARIABLES - NOMATIS BRAND ========== */
+        :root {
+            --nomatis-orange: #FF6900;
+            --nomatis-gold: #FCB900;
+            --nomatis-navy: #1e3a5f;
+            --nomatis-green: #2d5016;
+            --nomatis-dark: #1a1a1a;
+            --nomatis-light: #f5f5f5;
+            --nomatis-gray: #6b7280;
+            --nomatis-white: #ffffff;
+            
+            --gradient-orange: linear-gradient(135deg, #FF6900 0%, #FCB900 100%);
+            --gradient-dark: linear-gradient(180deg, #1e3a5f 0%, #1a1a1a 100%);
+            --gradient-section: linear-gradient(135deg, rgba(255,105,0,0.05) 0%, rgba(252,185,0,0.05) 100%);
+            
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.2);
+            --shadow-glow: 0 0 30px rgba(255,105,0,0.3);
+            
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+        }
+
+        /* ========== RESET & BASE ========== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--nomatis-dark);
+            background: var(--nomatis-light);
+            min-height: 100vh;
+        }
+
+        /* ========== HEADER TOOLBAR ========== */
+        .toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--gradient-dark);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 1000;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .toolbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .toolbar-logo {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient-orange);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .toolbar-title {
+            color: var(--nomatis-white);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .toolbar-title span {
+            color: var(--nomatis-orange);
+        }
+
+        .toolbar-status {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--nomatis-light);
+            font-size: 0.85rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.online { background: #22c55e; }
+        .status-dot.syncing { background: var(--nomatis-gold); }
+        .status-dot.offline { background: #ef4444; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-primary {
+            background: var(--gradient-orange);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* ========== MAIN CONTENT ========== */
+        .main-content {
+            margin-top: 70px;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ========== DOCUMENT HEADER ========== */
+        .doc-header {
+            background: var(--gradient-dark);
+            border-radius: var(--radius-lg);
+            padding: 60px 50px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .doc-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 60%;
+            height: 200%;
+            background: var(--gradient-orange);
+            opacity: 0.1;
+            transform: rotate(-15deg);
+            pointer-events: none;
+        }
+
+        .doc-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-orange);
+        }
+
+        .doc-badge {
+            display: inline-block;
+            background: var(--gradient-orange);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .doc-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--nomatis-white);
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .doc-title span {
+            color: var(--nomatis-orange);
+        }
+
+        .doc-subtitle {
+            font-size: 1.3rem;
+            color: rgba(255,255,255,0.8);
+            max-width: 700px;
+        }
+
+        .doc-meta {
+            display: flex;
+            gap: 30px;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .meta-item {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+
+        .meta-item strong {
+            color: var(--nomatis-orange);
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        /* ========== SECTIONS ========== */
+        .section {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--gradient-orange);
+            border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+        }
+
+        .section-number {
+            position: absolute;
+            top: -15px;
+            left: 30px;
+            background: var(--nomatis-navy);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .section-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--nomatis-navy);
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--nomatis-light);
+        }
+
+        .section-title span {
+            color: var(--nomatis-orange);
+        }
+
+        /* ========== SUBSECTIONS ========== */
+        .subsection {
+            margin-bottom: 35px;
+        }
+
+        .subsection-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--nomatis-navy);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .subsection-title::before {
+            content: '';
+            width: 4px;
+            height: 25px;
+            background: var(--nomatis-orange);
+            border-radius: 2px;
+        }
+
+        .subsection-content {
+            padding-left: 20px;
+        }
+
+        /* ========== PARAGRAPHS & TEXT ========== */
+        p {
+            margin-bottom: 15px;
+            color: var(--nomatis-dark);
+        }
+
+        .highlight-text {
+            background: var(--gradient-section);
+            padding: 20px 25px;
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--nomatis-orange);
+            margin: 20px 0;
+        }
+
+        .highlight-text strong {
+            color: var(--nomatis-orange);
+        }
+
+        /* ========== LISTS ========== */
+        ul, ol {
+            padding-left: 25px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        ul li::marker {
+            color: var(--nomatis-orange);
+        }
+
+        /* ========== TABLES ========== */
+        .table-container {
+            overflow-x: auto;
+            margin: 25px 0;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        thead {
+            background: var(--nomatis-navy);
+            color: white;
+        }
+
+        th {
+            padding: 15px 20px;
+            text-align: left;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--nomatis-light);
+        }
+
+        tbody tr:nth-child(even) {
+            background: rgba(255,105,0,0.03);
+        }
+
+        tbody tr:hover {
+            background: rgba(255,105,0,0.08);
+        }
+
+        /* ========== CARDS ========== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid var(--nomatis-light);
+            border-radius: var(--radius-md);
+            padding: 25px;
+            transition: all var(--transition-normal);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--nomatis-orange);
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-orange);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--nomatis-navy);
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            font-size: 0.9rem;
+            color: var(--nomatis-gray);
+        }
+
+        /* ========== SPEC BOXES ========== */
+        .spec-box {
+            background: var(--nomatis-navy);
+            color: white;
+            border-radius: var(--radius-md);
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .spec-box-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--nomatis-orange);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .spec-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .spec-box li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .spec-box li:last-child {
+            border-bottom: none;
+        }
+
+        .spec-box li::before {
+            content: '✓';
+            color: var(--nomatis-gold);
+            font-weight: bold;
+        }
+
+        /* ========== DELIVERABLES ========== */
+        .deliverable {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 20px;
+            background: var(--nomatis-light);
+            border-radius: var(--radius-md);
+            margin-bottom: 15px;
+        }
+
+        .deliverable-number {
+            width: 35px;
+            height: 35px;
+            background: var(--gradient-orange);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .deliverable-content h4 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: var(--nomatis-navy);
+            margin-bottom: 5px;
+        }
+
+        .deliverable-content p {
+            font-size: 0.9rem;
+            color: var(--nomatis-gray);
+            margin: 0;
+        }
+
+        /* ========== TIMELINE ========== */
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--gradient-orange);
+            border-radius: 3px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -32px;
+            top: 25px;
+            width: 15px;
+            height: 15px;
+            background: var(--nomatis-orange);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .timeline-phase {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: var(--nomatis-orange);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .timeline-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: var(--nomatis-navy);
+            font-size: 1.1rem;
+            margin: 5px 0;
+        }
+
+        .timeline-desc {
+            color: var(--nomatis-gray);
+            font-size: 0.95rem;
+        }
+
+        /* ========== EDITABLE FIELDS ========== */
+        [data-field] {
+            cursor: default;
+            transition: all var(--transition-fast);
+            border-radius: var(--radius-sm);
+        }
+
+        .edit-mode [data-field] {
+            cursor: text;
+            border: 2px dashed transparent;
+        }
+
+        .edit-mode [data-field]:hover {
+            border-color: var(--nomatis-orange);
+            background-color: rgba(255, 105, 0, 0.05);
+        }
+
+        .edit-mode [data-field]:focus {
+            border-color: var(--nomatis-gold);
+            background-color: rgba(252, 185, 0, 0.1);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(255, 105, 0, 0.2);
+        }
+
+        [data-field].remote-editing {
+            border-color: #f59e0b !important;
+            background-color: rgba(245, 158, 11, 0.15) !important;
+        }
+
+        /* ========== MODAL ========== */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-normal);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            transform: translateY(20px);
+            transition: all var(--transition-normal);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-icon {
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-orange);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 20px;
+        }
+
+        .modal h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: var(--nomatis-navy);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .modal p {
+            text-align: center;
+            color: var(--nomatis-gray);
+            margin-bottom: 25px;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid var(--nomatis-light);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            margin-bottom: 20px;
+            transition: all var(--transition-fast);
+        }
+
+        .modal input:focus {
+            outline: none;
+            border-color: var(--nomatis-orange);
+            box-shadow: 0 0 0 4px rgba(255, 105, 0, 0.1);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-buttons .btn {
+            flex: 1;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 12px 15px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* ========== TOAST NOTIFICATIONS ========== */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            padding: 15px 25px;
+            border-radius: var(--radius-md);
+            color: white;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInRight 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success { background: #22c55e; }
+        .toast.warning { background: var(--nomatis-gold); color: var(--nomatis-dark); }
+        .toast.error { background: #ef4444; }
+        .toast.info { background: var(--nomatis-navy); }
+
+        /* ========== FOOTER ========== */
+        .doc-footer {
+            background: var(--nomatis-navy);
+            color: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .doc-footer p {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 10px;
+        }
+
+        .doc-footer strong {
+            color: var(--nomatis-orange);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .toolbar {
+                padding: 0 15px;
+                height: 60px;
+            }
+
+            .toolbar-title {
+                font-size: 0.9rem;
+            }
+
+            .toolbar-status {
+                display: none;
+            }
+
+            .main-content {
+                padding: 20px 15px;
+                margin-top: 60px;
+            }
+
+            .doc-header {
+                padding: 40px 25px;
+            }
+
+            .doc-title {
+                font-size: 1.8rem;
+            }
+
+            .doc-meta {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .section {
+                padding: 25px 20px;
+            }
+
+            .section-title {
+                font-size: 1.4rem;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ========== PRINT STYLES ========== */
+        @media print {
+            .toolbar, .toast-container, .modal {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-top: 0;
+            }
+
+            .section {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== TOOLBAR ========== -->
+    <header class="toolbar">
+        <div class="toolbar-brand">
+            <div class="toolbar-logo">NT</div>
+            <div class="toolbar-title">NOMATIS-<span>Tower</span> | Cahier des Charges</div>
+        </div>
+        
+        <div class="toolbar-status">
+            <div class="status-item">
+                <span class="status-dot online" id="statusDot"></span>
+                <span id="statusText">Connecté</span>
+            </div>
+            <div class="status-item">
+                <span id="modeIndicator">🔒 Mode Lecture</span>
+            </div>
+            <div class="status-item">
+                <span id="userCount">👥 1 personne</span>
+            </div>
+            <div class="status-item">
+                <span id="lastSync">Mis à jour : --:--</span>
+            </div>
+        </div>
+        
+        <div class="toolbar-actions">
+            <button class="btn btn-primary" id="btnToggleEdit" onclick="toggleEditMode()">
+                🔓 Déverrouiller
+            </button>
+            <button class="btn btn-secondary" onclick="downloadPDF()">
+                📥 PDF
+            </button>
+            <button class="btn btn-secondary" onclick="downloadHTML()">
+                📄 HTML
+            </button>
+            <button class="btn btn-danger" id="btnRestore" onclick="confirmRestore()" style="display: none;">
+                🔄 Restaurer
+            </button>
+        </div>
+    </header>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content" id="documentContent">
+        
+        <!-- Document Header -->
+        <div class="doc-header">
+            <span class="doc-badge">Document Technique</span>
+            <h1 class="doc-title" data-field="doc_title">
+                Cahier des Charges<br>
+                <span>NOMATIS-Tower</span> Nouvelle Génération
+            </h1>
+            <p class="doc-subtitle" data-field="doc_subtitle">
+                Spécifications techniques pour une infrastructure de tours télécommunications 
+                modulaire intégrant une solution énergétique autonome
+            </p>
+            <div class="doc-meta">
+                <div class="meta-item">
+                    <strong>Version</strong>
+                    <span data-field="meta_version">1.0</span>
+                </div>
+                <div class="meta-item">
+                    <strong>Date</strong>
+                    <span data-field="meta_date">Décembre 2025</span>
+                </div>
+                <div class="meta-item">
+                    <strong>Projet</strong>
+                    <span data-field="meta_project">10 500 sites sur 5 ans</span>
+                </div>
+                <div class="meta-item">
+                    <strong>Classification</strong>
+                    <span data-field="meta_classification">Confidentiel</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTEXTE ET VISION -->
+        <section class="section">
+            <div class="section-number">0</div>
+            <h2 class="section-title">Contexte et <span>Vision</span> du Projet</h2>
+            
+            <p data-field="contexte_para1">
+                NOMATIS-TOWERS développe une infrastructure de tours télécommunications de nouvelle génération 
+                pour accompagner le déploiement 5G au Maroc. L'objectif est de créer un standard industriel 
+                innovant combinant efficience structurelle, autonomie énergétique et rentabilité économique, 
+                capable de servir un portefeuille de 10 500 sites sur 5 ans.
+            </p>
+            
+            <div class="highlight-text" data-field="contexte_highlight">
+                <strong>Objectif Principal :</strong> Définir les spécifications techniques, fonctionnelles 
+                et économiques pour la conception d'une tour télécom modulaire intégrant une solution 
+                énergétique autonome.
+            </div>
+        </section>
+
+        <!-- PARTIE 1 : ARCHITECTURE ET CONCEPTION -->
+        <section class="section">
+            <div class="section-number">1</div>
+            <h2 class="section-title">Architecture et Conception de la <span>Tour-Télécom</span></h2>
+            
+            <!-- 1.1 Objectifs de Conception -->
+            <div class="subsection">
+                <h3 class="subsection-title">1.1 Objectifs de Conception</h3>
+                <div class="subsection-content">
+                    <p data-field="p1_1_intro">
+                        Développer une architecture de tour télécom répondant aux critères suivants :
+                    </p>
+                    
+                    <div class="cards-grid">
+                        <div class="card">
+                            <div class="card-icon">⚡</div>
+                            <h4 class="card-title" data-field="card_efficience_title">Efficience</h4>
+                            <p class="card-text" data-field="card_efficience_text">
+                                Optimisation du ratio capacité/coût, réduction des délais (3-4 mois vs 9-12), 
+                                minimisation de l'empreinte au sol, facilité de maintenance
+                            </p>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">📈</div>
+                            <h4 class="card-title" data-field="card_scalabilite_title">Scalabilité</h4>
+                            <p class="card-text" data-field="card_scalabilite_text">
+                                Conception modulaire évolutive, capacité multi-opérateurs, préparation 5G/6G, 
+                                extension verticale et horizontale
+                            </p>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">💰</div>
+                            <h4 class="card-title" data-field="card_abordabilite_title">Abordabilité</h4>
+                            <p class="card-text" data-field="card_abordabilite_text">
+                                Coût optimisé par standardisation, réduction logistique, main-d'œuvre minimisée, 
+                                durée de vie >25 ans
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 1.2 Composants Structurels -->
+            <div class="subsection">
+                <h3 class="subsection-title">1.2 Composants Structurels à Spécifier</h3>
+                <div class="subsection-content">
+                    
+                    <!-- 1.2.1 Pylônes -->
+                    <h4 style="color: var(--nomatis-navy); font-weight: 600; margin: 20px 0 15px;">1.2.1 Pylônes</h4>
+                    <div class="spec-box">
+                        <div class="spec-box-title">Spécifications Requises</div>
+                        <ul data-field="spec_pylones">
+                            <li>Hauteurs standards : 25m, 35m, 45m (modulaires)</li>
+                            <li>Capacité de charge : définir les charges admissibles par hauteur</li>
+                            <li>Résistance aux vents : conformité aux normes marocaines et internationales</li>
+                            <li>Résistance sismique : selon zonage sismique marocain</li>
+                            <li>Traitement anticorrosion : durée de garantie minimum 15 ans</li>
+                            <li>Système de balisage aéronautique intégré</li>
+                            <li>Points d'ancrage normalisés pour équipements actifs</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 1.2.2 Fondations -->
+                    <h4 style="color: var(--nomatis-navy); font-weight: 600; margin: 25px 0 15px;">1.2.2 Fondations en Béton Préfabriqué</h4>
+                    <div class="spec-box">
+                        <div class="spec-box-title">Spécifications Requises</div>
+                        <ul data-field="spec_fondations">
+                            <li>Conception "prêt-à-poser" pour installation rapide</li>
+                            <li>Adaptation aux différents types de sols marocains</li>
+                            <li>Système d'ancrage standardisé compatible avec les pylônes</li>
+                            <li>Pré-câblage et fourreaux intégrés</li>
+                            <li>Dimensions et poids optimisés pour transport standard</li>
+                            <li>Système de drainage intégré</li>
+                        </ul>
+                    </div>
+                    
+                    <p style="margin-top: 20px;" data-field="fondations_variantes">
+                        <strong>Variantes à prévoir :</strong> Fondation standard (sol stable), 
+                        fondation renforcée (sol meuble), solution rooftop, fondation compacte (zones urbaines contraintes)
+                    </p>
+                    
+                    <!-- 1.2.3 Cluster Métallique -->
+                    <h4 style="color: var(--nomatis-navy); font-weight: 600; margin: 25px 0 15px;">1.2.3 Cluster Métallique (Shelter)</h4>
+                    <div class="spec-box">
+                        <div class="spec-box-title">Spécifications Requises</div>
+                        <ul data-field="spec_shelter">
+                            <li>Structure modulaire en acier ou aluminium</li>
+                            <li>Protection IP55 minimum</li>
+                            <li>Isolation thermique performante (coefficient U à définir)</li>
+                            <li>Système de ventilation passive et/ou active</li>
+                            <li>Compartimentage : équipements opérateurs, énergie, climatisation, data-center</li>
+                            <li>Système anti-intrusion et contrôle d'accès</li>
+                            <li>Dimensions standardisées pour transport conteneurisé</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 1.2.4 Mini Data-Center -->
+                    <h4 style="color: var(--nomatis-navy); font-weight: 600; margin: 25px 0 15px;">1.2.4 Espace Mini Data-Center (Edge Computing)</h4>
+                    <div class="spec-box">
+                        <div class="spec-box-title">Spécifications Requises</div>
+                        <ul data-field="spec_datacenter">
+                            <li>Surface utile : minimum 4 à 8 m² selon catégorie de site</li>
+                            <li>Capacité d'accueil : 2 à 4 racks 42U standard</li>
+                            <li>Alimentation électrique redondante</li>
+                            <li>Climatisation de précision dédiée</li>
+                            <li>Connectivité fibre optique haute capacité</li>
+                            <li>Sécurité physique renforcée (contrôle d'accès biométrique)</li>
+                            <li>Monitoring environnemental (température, humidité, fumée)</li>
+                            <li>Conformité aux normes Tier II minimum</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 1.2.5 Espace Énergétique -->
+                    <h4 style="color: var(--nomatis-navy); font-weight: 600; margin: 25px 0 15px;">1.2.5 Espace Solution Énergétique Intégrée</h4>
+                    <div class="spec-box">
+                        <div class="spec-box-title">Spécifications Requises</div>
+                        <ul data-field="spec_energie_espace">
+                            <li>Zone dédiée aux batteries (ventilée, température contrôlée)</li>
+                            <li>Emplacement optimisé pour système de refroidissement</li>
+                            <li>Surface pour installation PV (au sol ou intégrée à la structure)</li>
+                            <li>Local technique pour PMS (Power Management System)</li>
+                            <li>Câblage et cheminements normalisés</li>
+                            <li>Accessibilité pour maintenance</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 1.3 Propriété Intellectuelle -->
+            <div class="subsection">
+                <h3 class="subsection-title">1.3 Protection de la Propriété Intellectuelle</h3>
+                <div class="subsection-content">
+                    <p data-field="pi_intro">Livrables requis pour la protection IP :</p>
+                    <ul data-field="pi_list">
+                        <li>Dossier de dépôt de dessins et modèles industriels</li>
+                        <li>Documentation technique confidentielle</li>
+                        <li>Stratégie de protection brevets (le cas échéant)</li>
+                        <li>Accords de confidentialité avec sous-traitants</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- PARTIE 2 : SOLUTION D'ÉNERGIE AUTONOME -->
+        <section class="section">
+            <div class="section-number">2</div>
+            <h2 class="section-title">Solution d'<span>Énergie Autonome</span></h2>
+            
+            <!-- 2.1 Objectif Principal -->
+            <div class="subsection">
+                <h3 class="subsection-title">2.1 Objectif Principal</h3>
+                <div class="subsection-content">
+                    <p data-field="energie_objectif">
+                        Concevoir et dimensionner une solution énergétique autonome garantissant :
+                    </p>
+                    
+                    <div class="cards-grid">
+                        <div class="card">
+                            <div class="card-icon">✓</div>
+                            <h4 class="card-title">Continuité de service</h4>
+                            <p class="card-text" data-field="energie_continuite">≥ 99,95% de disponibilité</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">🔋</div>
+                            <h4 class="card-title">Autonomie minimum</h4>
+                            <p class="card-text" data-field="energie_autonomie">48 heures sans apport solaire ni réseau</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">📉</div>
+                            <h4 class="card-title">Stabilisation OPEX</h4>
+                            <p class="card-text" data-field="energie_opex">Réduction de 40% des coûts énergétiques</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">🚀</div>
+                            <h4 class="card-title">Accélération</h4>
+                            <p class="card-text" data-field="energie_acceleration">Indépendance vis-à-vis des délais de raccordement</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 2.2 Catégorisation des Sites -->
+            <div class="subsection">
+                <h3 class="subsection-title">2.2 Catégorisation des Sites et Besoins Énergétiques</h3>
+                <div class="subsection-content">
+                    
+                    <h4 style="color: var(--nomatis-navy); font-weight: 600; margin: 20px 0 15px;">2.2.1 Typologie des Tours</h4>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Catégorie</th>
+                                    <th>Description</th>
+                                    <th>Consommation Moyenne</th>
+                                    <th>Part du Parc</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-field="tab_cat1_nom"><strong>Rural</strong></td>
+                                    <td data-field="tab_cat1_desc">Faible trafic, zones isolées</td>
+                                    <td data-field="tab_cat1_conso">5 kW</td>
+                                    <td data-field="tab_cat1_part">30%</td>
+                                </tr>
+                                <tr>
+                                    <td data-field="tab_cat2_nom"><strong>Standard Macro</strong></td>
+                                    <td data-field="tab_cat2_desc">Trafic moyen, zones périurbaines</td>
+                                    <td data-field="tab_cat2_conso">10 kW</td>
+                                    <td data-field="tab_cat2_part">50%</td>
+                                </tr>
+                                <tr>
+                                    <td data-field="tab_cat3_nom"><strong>Haute Densité Urbaine</strong></td>
+                                    <td data-field="tab_cat3_desc">Fort trafic, zones métropolitaines</td>
+                                    <td data-field="tab_cat3_conso">20-30 kW</td>
+                                    <td data-field="tab_cat3_part">20%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h4 style="color: var(--nomatis-navy); font-weight: 600; margin: 25px 0 15px;">2.2.2 Profil de Consommation par Équipement</h4>
+                    <p data-field="profil_conso_intro">Équipements à alimenter (à détailler pour chaque catégorie) :</p>
+                    <ul data-field="profil_conso_list">
+                        <li>Équipements radio (RRU, antennes actives)</li>
+                        <li>Baseband units</li>
+                        <li>Systèmes de transmission</li>
+                        <li>Climatisation et ventilation</li>
+                        <li>Éclairage et sécurité</li>
+                        <li>Équipements edge computing (le cas échéant)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 2.3 Hypothèses de Saisonnalité -->
+            <div class="subsection">
+                <h3 class="subsection-title">2.3 Hypothèses de Saisonnalité</h3>
+                <div class="subsection-content">
+                    
+                    <h4 style="color: var(--nomatis-navy); font-weight: 600; margin: 20px 0 15px;">2.3.1 Variations de Consommation</h4>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Saison</th>
+                                    <th>Facteur Consommation</th>
+                                    <th>Principaux Facteurs</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-field="saison1_nom">Été</td>
+                                    <td data-field="saison1_facteur">+20 à +30%</td>
+                                    <td data-field="saison1_raison">Climatisation accrue, tourisme</td>
+                                </tr>
+                                <tr>
+                                    <td data-field="saison2_nom">Hiver</td>
+                                    <td data-field="saison2_facteur">Base</td>
+                                    <td data-field="saison2_raison">Consommation standard</td>
+                                </tr>
+                                <tr>
+                                    <td data-field="saison3_nom">Ramadan</td>
+                                    <td data-field="saison3_facteur">+15%</td>
+                                    <td data-field="saison3_raison">Trafic nocturne accru</td>
+                                </tr>
+                                <tr>
+                                    <td data-field="saison4_nom">Événements</td>
+                                    <td data-field="saison4_facteur">+50% (ponctuel)</td>
+                                    <td data-field="saison4_raison">FIFA 2030, festivals</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h4 style="color: var(--nomatis-navy); font-weight: 600; margin: 25px 0 15px;">2.3.2 Variations de Production Solaire</h4>
+                    <p data-field="prod_solaire_intro">Données d'irradiation à intégrer :</p>
+                    <ul data-field="prod_solaire_list">
+                        <li>Irradiation globale horizontale (GHI) par région marocaine</li>
+                        <li>Facteur de performance saisonnier</li>
+                        <li>Heures d'ensoleillement équivalentes par mois</li>
+                        <li>Température ambiante et impact sur rendement PV</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 2.4 Dimensionnement Photovoltaïque -->
+            <div class="subsection">
+                <h3 class="subsection-title">2.4 Dimensionnement Photovoltaïque</h3>
+                <div class="subsection-content">
+                    
+                    <h4 style="color: var(--nomatis-navy); font-weight: 600; margin: 20px 0 15px;">2.4.1 Surface Disponible par Type de Site</h4>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Type de Site</th>
+                                    <th>Part du Parc</th>
+                                    <th>Surface Disponible</th>
+                                    <th>Contraintes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-field="site1_type"><strong>Rooftop</strong></td>
+                                    <td data-field="site1_part">40%</td>
+                                    <td data-field="site1_surface">30-50 m²</td>
+                                    <td data-field="site1_contraintes">Charge structurelle, orientation</td>
+                                </tr>
+                                <tr>
+                                    <td data-field="site2_type"><strong>Stand-alone</strong></td>
+                                    <td data-field="site2_part">40%</td>
+                                    <td data-field="site2_surface">80-150 m²</td>
+                                    <td data-field="site2_contraintes">Emprise foncière, ombrage</td>
+                                </tr>
+                                <tr>
+                                    <td data-field="site3_type"><strong>Péri-urbain</strong></td>
+                                    <td data-field="site3_part">20%</td>
+                                    <td data-field="site3_surface">50-100 m²</td>
+                                    <td data-field="site3_contraintes">Réglementation urbanisme</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h4 style="color: var(--nomatis-navy); font-weight: 600; margin: 25px 0 15px;">2.4.3 Solutions de Design Innovantes</h4>
+                    <div class="highlight-text" data-field="design_innovant">
+                        <strong>Propositions à évaluer :</strong> Panneaux bifaciaux, structure PV intégrée au pylône, 
+                        trackers solaires pour sites stand-alone, panneaux sur clôture périphérique, 
+                        solutions d'ombrage architectural, panneaux haute efficience (>22%)
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 2.5 Système de Stockage -->
+            <div class="subsection">
+                <h3 class="subsection-title">2.5 Système de Stockage (BESS)</h3>
+                <div class="subsection-content">
+                    
+                    <h4 style="color: var(--nomatis-navy); font-weight: 600; margin: 20px 0 15px;">2.5.1 Dimensionnement par Catégorie</h4>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Catégorie</th>
+                                    <th>Capacité Stockage</th>
+                                    <th>Autonomie Cible</th>
+                                    <th>Technologie</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-field="bess1_cat">Rural (5 kW)</td>
+                                    <td data-field="bess1_cap">240 kWh</td>
+                                    <td data-field="bess1_auto">48h</td>
+                                    <td data-field="bess1_tech">LFP</td>
+                                </tr>
+                                <tr>
+                                    <td data-field="bess2_cat">Standard (10 kW)</td>
+                                    <td data-field="bess2_cap">480 kWh</td>
+                                    <td data-field="bess2_auto">48h</td>
+                                    <td data-field="bess2_tech">LFP</td>
+                                </tr>
+                                <tr>
+                                    <td data-field="bess3_cat">Haute Densité (25 kW)</td>
+                                    <td data-field="bess3_cap">1.200 kWh</td>
+                                    <td data-field="bess3_auto">48h</td>
+                                    <td data-field="bess3_tech">LFP</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h4 style="color: var(--nomatis-navy); font-weight: 600; margin: 25px 0 15px;">2.5.2 Spécifications Techniques Batteries</h4>
+                    <div class="spec-box">
+                        <div class="spec-box-title">Exigences BESS</div>
+                        <ul data-field="spec_bess">
+                            <li>Technologie : Lithium Fer Phosphate (LFP)</li>
+                            <li>Durée de vie : ≥ 6000 cycles à 80% DoD</li>
+                            <li>Garantie : 15 ans minimum</li>
+                            <li>Système BMS intégré</li>
+                            <li>Conformité normes de sécurité (UN38.3, IEC62619)</li>
+                            <li>Température de fonctionnement : -10°C à +55°C</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 2.6 Système de Refroidissement -->
+            <div class="subsection">
+                <h3 class="subsection-title">2.6 Système de Refroidissement</h3>
+                <div class="subsection-content">
+                    <div class="spec-box">
+                        <div class="spec-box-title">Spécifications Requises</div>
+                        <ul data-field="spec_refroidissement">
+                            <li>Climatisation de précision pour local batteries</li>
+                            <li>Température cible : 20-25°C</li>
+                            <li>Système hybride (passif + actif selon température ambiante)</li>
+                            <li>Consommation énergétique optimisée</li>
+                            <li>Redondance N+1 pour sites critiques</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 2.7 Power Management System -->
+            <div class="subsection">
+                <h3 class="subsection-title">2.7 Power Management System (PMS)</h3>
+                <div class="subsection-content">
+                    <div class="spec-box">
+                        <div class="spec-box-title">Fonctionnalités Requises</div>
+                        <ul data-field="spec_pms">
+                            <li>Gestion intelligente multi-sources (PV, batteries, grid, génératrice backup)</li>
+                            <li>Optimisation temps réel de la charge/décharge</li>
+                            <li>Prédiction de production solaire (IA/ML)</li>
+                            <li>Monitoring à distance 24/7</li>
+                            <li>Alertes et diagnostics automatiques</li>
+                            <li>Interface avec le NOC NOMATIS</li>
+                            <li>Historisation des données (minimum 2 ans)</li>
+                            <li>Rapports automatisés de performance</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 2.8 Analyse LCOE -->
+            <div class="subsection">
+                <h3 class="subsection-title">2.8 Analyse LCOE (Levelized Cost of Energy)</h3>
+                <div class="subsection-content">
+                    <p data-field="lcoe_intro">Paramètres à modéliser :</p>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Élément</th>
+                                    <th>Hypothèses</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Durée de vie projet</td>
+                                    <td data-field="lcoe_duree">20-25 ans</td>
+                                </tr>
+                                <tr>
+                                    <td>Taux d'actualisation</td>
+                                    <td data-field="lcoe_taux">8-10%</td>
+                                </tr>
+                                <tr>
+                                    <td>CAPEX PV</td>
+                                    <td data-field="lcoe_capex_pv">À définir (MAD/kWc installé)</td>
+                                </tr>
+                                <tr>
+                                    <td>CAPEX BESS</td>
+                                    <td data-field="lcoe_capex_bess">À définir (MAD/kWh)</td>
+                                </tr>
+                                <tr>
+                                    <td>OPEX annuel</td>
+                                    <td data-field="lcoe_opex">1-2% du CAPEX</td>
+                                </tr>
+                                <tr>
+                                    <td>Dégradation PV</td>
+                                    <td data-field="lcoe_degrad">0,5%/an</td>
+                                </tr>
+                                <tr>
+                                    <td>Remplacement batteries</td>
+                                    <td data-field="lcoe_remplacement">Année 12-15</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PARTIE 3 : OBJECTIFS ÉCONOMIQUES -->
+        <section class="section">
+            <div class="section-number">3</div>
+            <h2 class="section-title">Objectifs <span>Économiques</span> et Contraintes</h2>
+            
+            <!-- 3.1 Structure de Revenus -->
+            <div class="subsection">
+                <h3 class="subsection-title">3.1 Structure de Revenus</h3>
+                <div class="subsection-content">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Source</th>
+                                    <th>Montant</th>
+                                    <th>Commentaire</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-field="rev1_source"><strong>Loyer mensuel opérateur</strong></td>
+                                    <td data-field="rev1_montant">1 800 € / site</td>
+                                    <td data-field="rev1_comment">Contrat 15 ans, indexé</td>
+                                </tr>
+                                <tr>
+                                    <td data-field="rev2_source"><strong>Location edge computing</strong></td>
+                                    <td data-field="rev2_montant">À définir</td>
+                                    <td data-field="rev2_comment">Revenus additionnels</td>
+                                </tr>
+                                <tr>
+                                    <td data-field="rev3_source"><strong>Co-location</strong></td>
+                                    <td data-field="rev3_montant">À définir</td>
+                                    <td data-field="rev3_comment">2ème/3ème opérateur</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 3.2 Objectifs de Rentabilité -->
+            <div class="subsection">
+                <h3 class="subsection-title">3.2 Objectifs de Rentabilité</h3>
+                <div class="subsection-content">
+                    <div class="cards-grid">
+                        <div class="card">
+                            <div class="card-icon">📊</div>
+                            <h4 class="card-title">Rentabilité Nette</h4>
+                            <p class="card-text" data-field="obj_rentabilite">10% minimum pour les investisseurs</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">💹</div>
+                            <h4 class="card-title">Marge EBITDA</h4>
+                            <p class="card-text" data-field="obj_ebitda">≥ 45% cible</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">💵</div>
+                            <h4 class="card-title">Cash-flow</h4>
+                            <p class="card-text" data-field="obj_cashflow">Positif dès l'année 1</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 3.4 Matrice de Coûts -->
+            <div class="subsection">
+                <h3 class="subsection-title">3.4 Matrice de Coûts Cibles</h3>
+                <div class="subsection-content">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Catégorie</th>
+                                    <th>CAPEX Max/Site</th>
+                                    <th>OPEX Max/Mois</th>
+                                    <th>Loyer Cible</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-field="cout1_cat"><strong>Rural</strong></td>
+                                    <td data-field="cout1_capex">550 000 MAD</td>
+                                    <td data-field="cout1_opex">3 500 MAD</td>
+                                    <td data-field="cout1_loyer">15 000 MAD</td>
+                                </tr>
+                                <tr>
+                                    <td data-field="cout2_cat"><strong>Standard</strong></td>
+                                    <td data-field="cout2_capex">750 000 MAD</td>
+                                    <td data-field="cout2_opex">5 500 MAD</td>
+                                    <td data-field="cout2_loyer">18 000 MAD</td>
+                                </tr>
+                                <tr>
+                                    <td data-field="cout3_cat"><strong>Haute Densité</strong></td>
+                                    <td data-field="cout3_capex">1 200 000 MAD</td>
+                                    <td data-field="cout3_opex">8 500 MAD</td>
+                                    <td data-field="cout3_loyer">25 000 MAD</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PARTIE 4 : LIVRABLES ATTENDUS -->
+        <section class="section">
+            <div class="section-number">4</div>
+            <h2 class="section-title"><span>Livrables</span> Attendus</h2>
+            
+            <!-- 4.1 Documentation Technique -->
+            <div class="subsection">
+                <h3 class="subsection-title">4.1 Documentation Technique</h3>
+                <div class="subsection-content">
+                    <div class="deliverable">
+                        <div class="deliverable-number">1</div>
+                        <div class="deliverable-content">
+                            <h4 data-field="livrable1_titre">Plans et Dessins Industriels</h4>
+                            <p data-field="livrable1_desc">Plans d'ensemble (2D/3D), plans de détail par composant, plans d'implantation type, dessins d'exécution</p>
+                        </div>
+                    </div>
+                    <div class="deliverable">
+                        <div class="deliverable-number">2</div>
+                        <div class="deliverable-content">
+                            <h4 data-field="livrable2_titre">Spécifications Techniques Détaillées</h4>
+                            <p data-field="livrable2_desc">Cahier des charges matériaux, spécifications fonctionnelles, normes et standards, protocoles de test</p>
+                        </div>
+                    </div>
+                    <div class="deliverable">
+                        <div class="deliverable-number">3</div>
+                        <div class="deliverable-content">
+                            <h4 data-field="livrable3_titre">Notes de Calcul</h4>
+                            <p data-field="livrable3_desc">Calculs structurels, dimensionnement énergétique, bilans thermiques, analyse de fiabilité (MTBF)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 4.2 Documentation Économique -->
+            <div class="subsection">
+                <h3 class="subsection-title">4.2 Documentation Économique</h3>
+                <div class="subsection-content">
+                    <div class="deliverable">
+                        <div class="deliverable-number">4</div>
+                        <div class="deliverable-content">
+                            <h4 data-field="livrable4_titre">Business Case Détaillé</h4>
+                            <p data-field="livrable4_desc">Modèle financier Excel complet, analyse LCOE, comparatif solutions, sensibilités et scénarios</p>
+                        </div>
+                    </div>
+                    <div class="deliverable">
+                        <div class="deliverable-number">5</div>
+                        <div class="deliverable-content">
+                            <h4 data-field="livrable5_titre">Base de Données Fournisseurs</h4>
+                            <p data-field="livrable5_desc">Shortlist fournisseurs qualifiés, offres indicatives, délais et conditions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 4.3 Prototypes -->
+            <div class="subsection">
+                <h3 class="subsection-title">4.3 Prototypes et Validation</h3>
+                <div class="subsection-content">
+                    <div class="deliverable">
+                        <div class="deliverable-number">6</div>
+                        <div class="deliverable-content">
+                            <h4 data-field="livrable6_titre">Site Pilote</h4>
+                            <p data-field="livrable6_desc">Spécifications du site pilote, protocole de validation, critères de succès</p>
+                        </div>
+                    </div>
+                    <div class="deliverable">
+                        <div class="deliverable-number">7</div>
+                        <div class="deliverable-content">
+                            <h4 data-field="livrable7_titre">Rapports de Test</h4>
+                            <p data-field="livrable7_desc">Performances mesurées vs spécifiées, retour d'expérience, recommandations d'optimisation</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PARTIE 5 : PLANNING -->
+        <section class="section">
+            <div class="section-number">5</div>
+            <h2 class="section-title"><span>Planning</span> et Jalons</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <span class="timeline-phase" data-field="phase1_duree">8 semaines</span>
+                    <h4 class="timeline-title" data-field="phase1_titre">Phase 1 : Conception Préliminaire</h4>
+                    <p class="timeline-desc" data-field="phase1_desc">Avant-projet, choix architecturaux</p>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-phase" data-field="phase2_duree">12 semaines</span>
+                    <h4 class="timeline-title" data-field="phase2_titre">Phase 2 : Conception Détaillée</h4>
+                    <p class="timeline-desc" data-field="phase2_desc">Plans d'exécution, spécifications</p>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-phase" data-field="phase3_duree">6 semaines</span>
+                    <h4 class="timeline-title" data-field="phase3_titre">Phase 3 : Sourcing</h4>
+                    <p class="timeline-desc" data-field="phase3_desc">Consultations, négociations</p>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-phase" data-field="phase4_duree">10 semaines</span>
+                    <h4 class="timeline-title" data-field="phase4_titre">Phase 4 : Prototype</h4>
+                    <p class="timeline-desc" data-field="phase4_desc">Fabrication, installation pilote</p>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-phase" data-field="phase5_duree">8 semaines</span>
+                    <h4 class="timeline-title" data-field="phase5_titre">Phase 5 : Validation</h4>
+                    <p class="timeline-desc" data-field="phase5_desc">Tests, ajustements, industrialisation</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PARTIE 6 : CRITÈRES D'ÉVALUATION -->
+        <section class="section">
+            <div class="section-number">6</div>
+            <h2 class="section-title">Critères d'<span>Évaluation</span></h2>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Critère</th>
+                            <th>Pondération</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-field="critere1_nom">Conformité technique</td>
+                            <td data-field="critere1_pond">30%</td>
+                        </tr>
+                        <tr>
+                            <td data-field="critere2_nom">Performance énergétique</td>
+                            <td data-field="critere2_pond">20%</td>
+                        </tr>
+                        <tr>
+                            <td data-field="critere3_nom">Coût global (CAPEX + OPEX)</td>
+                            <td data-field="critere3_pond">25%</td>
+                        </tr>
+                        <tr>
+                            <td data-field="critere4_nom">Délai de déploiement</td>
+                            <td data-field="critere4_pond">10%</td>
+                        </tr>
+                        <tr>
+                            <td data-field="critere5_nom">Innovation et différenciation</td>
+                            <td data-field="critere5_pond">10%</td>
+                        </tr>
+                        <tr>
+                            <td data-field="critere6_nom">Références et expérience</td>
+                            <td data-field="critere6_pond">5%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="highlight-text" style="margin-top: 30px;">
+                <p data-field="conclusion">
+                    <strong>Ce cahier des charges servira de base</strong> à la consultation des bureaux d'études, 
+                    fabricants et intégrateurs pour la conception de la solution NOMATIS-Tower nouvelle génération.
+                </p>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="doc-footer">
+            <p data-field="footer_copyright">© 2025 <strong>NOMATIS-TOWERS</strong> - Tous droits réservés</p>
+            <p data-field="footer_contact">Document confidentiel - Usage interne uniquement</p>
+        </footer>
+    </main>
+
+    <!-- ========== PASSWORD MODAL ========== -->
+    <div class="modal" id="passwordModal">
+        <div class="modal-content">
+            <div class="modal-icon">🔐</div>
+            <h3>Accès Éditeur</h3>
+            <p>Entrez le mot de passe pour modifier ce document</p>
+            <input type="password" id="passwordInput" placeholder="Mot de passe" onkeypress="handlePasswordKeypress(event)">
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="verifyPassword()">Déverrouiller</button>
+                <button class="btn btn-secondary" onclick="closePasswordModal()">Annuler</button>
+            </div>
+            <div class="error-message" id="passwordError">❌ Mot de passe incorrect</div>
+        </div>
+    </div>
+
+    <!-- ========== RESTORE MODAL ========== -->
+    <div class="modal" id="restoreModal">
+        <div class="modal-content">
+            <div class="modal-icon">⚠️</div>
+            <h3>Restaurer la version originale ?</h3>
+            <p>Cette action remplacera toutes les modifications par le contenu original. Cette opération est irréversible.</p>
+            <div class="modal-buttons">
+                <button class="btn btn-danger" onclick="restoreOriginalVersion()">Confirmer</button>
+                <button class="btn btn-secondary" onclick="closeRestoreModal()">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== TOAST CONTAINER ========== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ========== JAVASCRIPT ========== -->
+    <script>
+        // ========== CONFIGURATION ==========
+        const EDIT_PASSWORD = "BlanLIA$$";
+        const DEBOUNCE_DELAY = 500;
+        const AUTO_LOCK_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+        const DOCUMENT_ID = "nomatis-tower-cdc-v1";
+
+        // Firebase Configuration - NOMATIS-TOWERS
+        const firebaseConfig = {
+            apiKey: "AIzaSyCb55P72WaCmJ8QDKirOLgHHqLdgtdhJOk",
+            authDomain: "nomatis-towers.firebaseapp.com",
+            databaseURL: "https://nomatis-towers-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "nomatis-towers",
+            storageBucket: "nomatis-towers.firebasestorage.app",
+            messagingSenderId: "747276482490",
+            appId: "1:747276482490:web:433f606c3f26d598dd8f83",
+            measurementId: "G-NQ1E1E6FL5"
+        };
+
+        // ========== STATE ==========
+        let isEditMode = false;
+        let isOnline = false;
+        let isFirebaseAvailable = false;
+        let pendingChanges = [];
+        let sessionId = '';
+        let debounceTimer = null;
+        let autoLockTimer = null;
+        let database = null;
+        let originalContent = {};
+
+        // ========== INITIALIZATION ==========
+        document.addEventListener('DOMContentLoaded', init);
+
+        function init() {
+            sessionId = generateSessionId();
+            saveOriginalContent();
+            initFirebase();
+            setupEditableFields();
+            disableEditing();
+            updateLastSyncTime();
+        }
+
+        function generateSessionId() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function saveOriginalContent() {
+            document.querySelectorAll('[data-field]').forEach(el => {
+                originalContent[el.getAttribute('data-field')] = el.innerHTML;
+            });
+        }
+
+        // ========== FIREBASE ==========
+        function initFirebase() {
+            try {
+                // Check if Firebase config is valid
+                if (firebaseConfig.apiKey === "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXX") {
+                    console.warn('Firebase not configured - running in local mode');
+                    isFirebaseAvailable = false;
+                    updateConnectionStatus('offline');
+                    loadFromLocalStorage();
+                    return;
+                }
+
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                
+                // Check connection
+                const connectedRef = database.ref('.info/connected');
+                connectedRef.on('value', (snap) => {
+                    if (snap.val() === true) {
+                        isOnline = true;
+                        isFirebaseAvailable = true;
+                        updateConnectionStatus('online');
+                        setupPresence();
+                        listenToChanges();
+                        loadFromFirebase();
+                        syncPendingChanges();
+                    } else {
+                        isOnline = false;
+                        updateConnectionStatus('offline');
+                    }
+                });
+            } catch (error) {
+                console.error('Firebase init error:', error);
+                isFirebaseAvailable = false;
+                updateConnectionStatus('offline');
+                loadFromLocalStorage();
+            }
+        }
+
+        function setupPresence() {
+            if (!isFirebaseAvailable) return;
+            
+            const presenceRef = database.ref(`documents/${DOCUMENT_ID}/presence/${sessionId}`);
+            presenceRef.set({
+                mode: isEditMode ? 'edit' : 'read',
+                lastSeen: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            presenceRef.onDisconnect().remove();
+            
+            // Listen for user count
+            database.ref(`documents/${DOCUMENT_ID}/presence`).on('value', (snap) => {
+                const count = snap.numChildren();
+                updateUserCount(count);
+            });
+        }
+
+        function listenToChanges() {
+            if (!isFirebaseAvailable) return;
+            
+            database.ref(`documents/${DOCUMENT_ID}/content`).on('value', (snap) => {
+                const data = snap.val();
+                if (data) {
+                    Object.keys(data).forEach(field => {
+                        const el = document.querySelector(`[data-field="${field}"]`);
+                        if (el && !el.matches(':focus')) {
+                            el.innerHTML = data[field];
+                        }
+                    });
+                    updateLastSyncTime();
+                }
+            });
+        }
+
+        function loadFromFirebase() {
+            if (!isFirebaseAvailable) return;
+            
+            updateConnectionStatus('syncing');
+            database.ref(`documents/${DOCUMENT_ID}/content`).once('value')
+                .then((snap) => {
+                    const data = snap.val();
+                    if (data) {
+                        Object.keys(data).forEach(field => {
+                            const el = document.querySelector(`[data-field="${field}"]`);
+                            if (el) {
+                                el.innerHTML = data[field];
+                            }
+                        });
+                    }
+                    updateConnectionStatus('online');
+                    updateLastSyncTime();
+                })
+                .catch((error) => {
+                    console.error('Load error:', error);
+                    updateConnectionStatus('offline');
+                    loadFromLocalStorage();
+                });
+        }
+
+        function syncToFirebase(field, value) {
+            if (!isFirebaseAvailable || !isOnline) {
+                pendingChanges.push({ field, value, timestamp: Date.now() });
+                saveToLocalStorage();
+                showToast('⚠️ Sauvegardé localement', 'warning');
+                return;
+            }
+            
+            updateConnectionStatus('syncing');
+            database.ref(`documents/${DOCUMENT_ID}/content/${field}`).set(value)
+                .then(() => {
+                    database.ref(`documents/${DOCUMENT_ID}/config`).update({
+                        lastUpdated: firebase.database.ServerValue.TIMESTAMP,
+                        lastEditor: sessionId
+                    });
+                    updateConnectionStatus('online');
+                    updateLastSyncTime();
+                    showToast('✅ Synchronisé', 'success');
+                })
+                .catch((error) => {
+                    console.error('Sync error:', error);
+                    pendingChanges.push({ field, value, timestamp: Date.now() });
+                    saveToLocalStorage();
+                    showToast('⚠️ Sauvegardé localement', 'warning');
+                });
+        }
+
+        function syncPendingChanges() {
+            if (!isFirebaseAvailable || !isOnline || pendingChanges.length === 0) return;
+            
+            const changes = [...pendingChanges];
+            pendingChanges = [];
+            
+            changes.forEach(change => {
+                database.ref(`documents/${DOCUMENT_ID}/content/${change.field}`).set(change.value);
+            });
+            
+            localStorage.removeItem(`${DOCUMENT_ID}_pending`);
+            showToast('🔄 Modifications synchronisées', 'info');
+        }
+
+        // ========== LOCAL STORAGE ==========
+        function saveToLocalStorage() {
+            const data = {};
+            document.querySelectorAll('[data-field]').forEach(el => {
+                data[el.getAttribute('data-field')] = el.innerHTML;
+            });
+            localStorage.setItem(`${DOCUMENT_ID}_content`, JSON.stringify(data));
+            
+            if (pendingChanges.length > 0) {
+                localStorage.setItem(`${DOCUMENT_ID}_pending`, JSON.stringify(pendingChanges));
+            }
+        }
+
+        function loadFromLocalStorage() {
+            const stored = localStorage.getItem(`${DOCUMENT_ID}_content`);
+            if (stored) {
+                try {
+                    const data = JSON.parse(stored);
+                    Object.keys(data).forEach(field => {
+                        const el = document.querySelector(`[data-field="${field}"]`);
+                        if (el) {
+                            el.innerHTML = data[field];
+                        }
+                    });
+                    showToast('📂 Contenu local chargé', 'info');
+                } catch (e) {
+                    console.error('Local storage parse error:', e);
+                }
+            }
+            
+            const pending = localStorage.getItem(`${DOCUMENT_ID}_pending`);
+            if (pending) {
+                try {
+                    pendingChanges = JSON.parse(pending);
+                } catch (e) {
+                    console.error('Pending changes parse error:', e);
+                }
+            }
+        }
+
+        // ========== AUTHENTICATION ==========
+        function toggleEditMode() {
+            if (isEditMode) {
+                disableEditMode();
+            } else {
+                openPasswordModal();
+            }
+        }
+
+        function openPasswordModal() {
+            document.getElementById('passwordModal').classList.add('active');
+            document.getElementById('passwordInput').focus();
+            document.getElementById('passwordError').classList.remove('show');
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.remove('active');
+            document.getElementById('passwordInput').value = '';
+        }
+
+        function handlePasswordKeypress(event) {
+            if (event.key === 'Enter') {
+                verifyPassword();
+            }
+        }
+
+        function verifyPassword() {
+            const input = document.getElementById('passwordInput').value;
+            if (input === EDIT_PASSWORD) {
+                closePasswordModal();
+                enableEditMode();
+                showToast('🔓 Mode édition activé', 'success');
+            } else {
+                document.getElementById('passwordError').classList.add('show');
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+            }
+        }
+
+        function enableEditMode() {
+            isEditMode = true;
+            document.body.classList.add('edit-mode');
+            enableEditing();
+            updateModeIndicator('edit');
+            document.getElementById('btnToggleEdit').innerHTML = '🔒 Verrouiller';
+            document.getElementById('btnRestore').style.display = 'inline-flex';
+            
+            if (isFirebaseAvailable) {
+                database.ref(`documents/${DOCUMENT_ID}/presence/${sessionId}`).update({
+                    mode: 'edit'
+                });
+            }
+            
+            resetAutoLockTimer();
+        }
+
+        function disableEditMode() {
+            isEditMode = false;
+            document.body.classList.remove('edit-mode');
+            disableEditing();
+            updateModeIndicator('read');
+            document.getElementById('btnToggleEdit').innerHTML = '🔓 Déverrouiller';
+            document.getElementById('btnRestore').style.display = 'none';
+            
+            if (isFirebaseAvailable && database) {
+                database.ref(`documents/${DOCUMENT_ID}/presence/${sessionId}`).update({
+                    mode: 'read'
+                });
+            }
+            
+            clearAutoLockTimer();
+        }
+
+        function resetAutoLockTimer() {
+            clearAutoLockTimer();
+            autoLockTimer = setTimeout(() => {
+                if (isEditMode) {
+                    disableEditMode();
+                    showToast('🔒 Session expirée - Mode lecture', 'warning');
+                }
+            }, AUTO_LOCK_TIMEOUT);
+        }
+
+        function clearAutoLockTimer() {
+            if (autoLockTimer) {
+                clearTimeout(autoLockTimer);
+                autoLockTimer = null;
+            }
+        }
+
+        // ========== EDITING ==========
+        function setupEditableFields() {
+            document.querySelectorAll('[data-field]').forEach(el => {
+                el.addEventListener('input', function() {
+                    if (!isEditMode) return;
+                    
+                    resetAutoLockTimer();
+                    
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        const field = this.getAttribute('data-field');
+                        const value = this.innerHTML;
+                        syncToFirebase(field, value);
+                    }, DEBOUNCE_DELAY);
+                });
+                
+                el.addEventListener('focus', function() {
+                    if (isEditMode) {
+                        resetAutoLockTimer();
+                    }
+                });
+            });
+        }
+
+        function enableEditing() {
+            document.querySelectorAll('[data-field]').forEach(el => {
+                el.setAttribute('contenteditable', 'true');
+            });
+        }
+
+        function disableEditing() {
+            document.querySelectorAll('[data-field]').forEach(el => {
+                el.setAttribute('contenteditable', 'false');
+            });
+        }
+
+        // ========== RESTORE ==========
+        function confirmRestore() {
+            document.getElementById('restoreModal').classList.add('active');
+        }
+
+        function closeRestoreModal() {
+            document.getElementById('restoreModal').classList.remove('active');
+        }
+
+        function restoreOriginalVersion() {
+            closeRestoreModal();
+            
+            Object.keys(originalContent).forEach(field => {
+                const el = document.querySelector(`[data-field="${field}"]`);
+                if (el) {
+                    el.innerHTML = originalContent[field];
+                }
+                
+                if (isFirebaseAvailable && isOnline) {
+                    database.ref(`documents/${DOCUMENT_ID}/content/${field}`).set(originalContent[field]);
+                }
+            });
+            
+            saveToLocalStorage();
+            showToast('🔄 Version originale restaurée', 'success');
+        }
+
+        // ========== UI UPDATES ==========
+        function updateConnectionStatus(status) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            
+            dot.className = 'status-dot ' + status;
+            
+            switch(status) {
+                case 'online':
+                    text.textContent = 'Connecté';
+                    break;
+                case 'syncing':
+                    text.textContent = 'Synchronisation...';
+                    break;
+                case 'offline':
+                    text.textContent = 'Hors ligne';
+                    break;
+            }
+        }
+
+        function updateModeIndicator(mode) {
+            const indicator = document.getElementById('modeIndicator');
+            indicator.textContent = mode === 'edit' ? '✏️ Mode Édition' : '🔒 Mode Lecture';
+        }
+
+        function updateUserCount(count) {
+            document.getElementById('userCount').textContent = `👥 ${count} personne${count > 1 ? 's' : ''}`;
+        }
+
+        function updateLastSyncTime() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('lastSync').textContent = `Mis à jour : ${time}`;
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ========== EXPORT ==========
+        function downloadPDF() {
+            showToast('📥 Génération du PDF...', 'info');
+            
+            const element = document.getElementById('documentContent');
+            const opt = {
+                margin: [15, 15, 15, 15],
+                filename: 'NOMATIS-Tower_Cahier_des_Charges.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(opt).from(element).save()
+                .then(() => showToast('✅ PDF téléchargé', 'success'))
+                .catch(() => showToast('❌ Erreur PDF', 'error'));
+        }
+
+        function downloadHTML() {
+            const htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'NOMATIS-Tower_Cahier_des_Charges.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('✅ HTML téléchargé', 'success');
+        }
+    </script>
+
+<!--
+=================================================================
+CAHIER DES CHARGES NOMATIS-TOWER - APPLICATION ÉDITABLE
+=================================================================
+
+MODE LECTURE (Par défaut) :
+- Tous les visiteurs voient le même contenu synchronisé
+- Mise à jour automatique si le document est modifié
+
+MODE ÉDITION :
+1. Cliquer sur "🔓 Déverrouiller"
+2. Entrer le mot de passe : BlanLIA$$
+3. Cliquer sur n'importe quelle zone pour la modifier
+4. Les modifications sont sauvegardées automatiquement
+5. Cliquer sur "🔒 Verrouiller" pour revenir en lecture
+
+FONCTIONNALITÉS :
+- 📥 PDF : exporte le document actuel
+- 📄 HTML : télécharge une copie du fichier
+- 🔄 Restaurer : remet le contenu initial (éditeurs uniquement)
+
+CONFIGURATION FIREBASE :
+Remplacer les credentials dans firebaseConfig par vos vrais identifiants Firebase
+
+STATUT CONNEXION :
+- 🟢 Connecté : synchronisation active
+- 🟡 Synchronisation : sauvegarde en cours
+- 🔴 Hors ligne : mode local activé
+
+=================================================================
+© 2025 NOMATIS-TOWERS - Tous droits réservés
+=================================================================
+-->
+</body>
+</html>
